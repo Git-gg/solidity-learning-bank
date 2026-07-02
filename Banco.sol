@@ -1,39 +1,46 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.35;
+pragma solidity ^0.8.20;
 
 contract Banco {
+
     mapping(address => uint256) public saldos;
+    address public owner;
 
-    // Deposita una cantidad en el saldo de una wallet
-    function depositar(address wallet, uint256 cantidad) public {
-        saldos[wallet] = saldos[wallet] + cantidad;
+    constructor() {
+        owner = msg.sender;
     }
 
-    // Retira una cantidad, solo si hay saldo suficiente
-    function retirar(address wallet, uint256 cantidad) public {
-        require(saldos[wallet] >= cantidad, "Saldo insuficiente");
-        saldos[wallet] = saldos[wallet] - cantidad;
+    function depositar(uint256 cantidad) public {
+        saldos[msg.sender] = saldos[msg.sender] + cantidad;
     }
 
-    // Devuelve el nivel de cliente según su saldo
-    function nivelCliente(address wallet) public view returns (string memory) {
-        if (saldos[wallet] < 100) {
+    function retirar(uint256 cantidad) public {
+        require(saldos[msg.sender] >= cantidad, "Saldo insuficiente");
+        saldos[msg.sender] = saldos[msg.sender] - cantidad;
+    }
+
+    function nivelCliente() public view returns (string memory) {
+        if (saldos[msg.sender] < 100) {
             return "Bronce";
-        } else if (saldos[wallet] <= 999) {
+        } else if (saldos[msg.sender] <= 999) {
             return "Plata";
         } else {
             return "Oro";
         }
     }
 
-    // Simula el saldo tras varios años con 5% de interés compuesto anual
-    function simularInteres(address wallet, uint256 anios) public view returns (uint256) {
-        uint256 saldoFinal = saldos[wallet];
+    function simularInteres(uint256 anios) public view returns (uint256) {
+        uint256 saldoFinal = saldos[msg.sender];
 
         for (uint256 i = 0; i < anios; i++) {
             saldoFinal = saldoFinal + (saldoFinal * 5 / 100);
         }
 
         return saldoFinal;
+    }
+
+    function resetearSaldo(address wallet) public {
+        require(msg.sender == owner, "Solo el owner puede hacer esto");
+        saldos[wallet] = 0;
     }
 }
